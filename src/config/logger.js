@@ -1,24 +1,14 @@
-// src/config/logger.js
-const { createLogger, format, transports } = require("winston");
-const { combine, timestamp, printf, colorize } = format;
+// path: src/config/logger.js
+const morgan = require("morgan");
 
-const logFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} [${level}]: ${message}`;
-});
-
-const logger = createLogger({
-  level: "info",
-  format: combine(
-    colorize(),
-    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    logFormat
-  ),
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: "logs/app.log", level: "info" }),
-    new transports.File({ filename: "logs/error.log", level: "error" }),
-  ],
-  exceptionHandlers: [new transports.File({ filename: "logs/exceptions.log" })],
+const logger = morgan((tokens, req, res) => {
+  return [
+    `[${new Date().toISOString()}]`,
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    `Response Time: ${tokens["response-time"](req, res)} ms`,
+  ].join(" ");
 });
 
 module.exports = logger;
